@@ -60,11 +60,11 @@ def main():
     if args.type == "unit":
         cmd.extend(["tests/test_conversions.py"])
     elif args.type == "integration":
-        cmd.extend(["tests/test_api.py"])
+        cmd.extend(["tests/test_api.py", "tests/test_readme_examples.py"])
     elif args.type == "edge":
         cmd.extend(["tests/test_edge_cases.py"])
     elif args.type == "api":
-        cmd.extend(["tests/test_api.py", "tests/test_base64_little_endian.py"])
+        cmd.extend(["tests/test_api.py", "tests/test_base64_little_endian.py", "tests/test_readme_examples.py"])
     else:  # all
         cmd.extend(["tests/"])
 
@@ -86,10 +86,10 @@ def main():
     success = run_command(cmd, f"Running {args.type} tests")
 
     if success:
-        print(f"\n✅ All {args.type} tests passed!")
+        print(f"\n✅ All tests passed!")
         return 0
     else:
-        print(f"\n❌ Some {args.type} tests failed!")
+        print(f"\n❌ Some tests failed!")
         return 1
 
 

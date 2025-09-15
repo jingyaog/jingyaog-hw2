@@ -167,8 +167,7 @@ class TestBase64LittleEndian:
                 assert list(decoded_bytes)[:2] == list(expected_bytes_le)[:2]
 
     def test_zero_handling_in_base64(self, client):
-        """Test the specific zero handling bug in base64 conversion"""
-        # This test specifically targets the zero conversion bug
+        """Test zero handling in base64 conversion (should now work after fix)"""
         response = client.post('/convert',
             json={
                 'input': '0',
@@ -179,26 +178,25 @@ class TestBase64LittleEndian:
         assert response.status_code == 200
         data = response.get_json()
 
-        # This should work but may fail due to the bit_length() bug with 0
-        if data['error'] is not None:
-            # Document the bug
-            assert 'bit_length' in data['error'] or 'bytes' in data['error']
-        else:
-            # If it works, test roundtrip
-            response2 = client.post('/convert',
-                json={
-                    'input': data['result'],
-                    'inputType': 'base64',
-                    'outputType': 'decimal'
-                }
-            )
-            assert response2.status_code == 200
-            data2 = response2.get_json()
-            if data2['error'] is None:
-                assert data2['result'] == '0'
+        # Should now work after fix
+        assert data['error'] is None
+        assert data['result'] is not None
+
+        # Test roundtrip
+        response2 = client.post('/convert',
+            json={
+                'input': data['result'],
+                'inputType': 'base64',
+                'outputType': 'decimal'
+            }
+        )
+        assert response2.status_code == 200
+        data2 = response2.get_json()
+        assert data2['error'] is None
+        assert data2['result'] == '0'
 
     def test_negative_numbers_base64(self, client):
-        """Test negative number handling in base64 conversion"""
+        """Test negative number handling in base64 conversion (should now fail gracefully)"""
         negative_numbers = ['-1', '-42', '-256']
 
         for neg_num in negative_numbers:
@@ -212,6 +210,6 @@ class TestBase64LittleEndian:
             assert response.status_code == 200
             data = response.get_json()
 
-            # Should fail with current implementation
+            # Should now fail gracefully with clear error message
             assert data['error'] is not None
-            assert 'OverflowError' in data['error'] or 'negative' in data['error']
+            assert 'negative' in data['error'].lower()

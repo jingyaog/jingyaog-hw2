@@ -235,7 +235,7 @@ class TestErrorHandling:
         assert data['result'] is None
 
     def test_missing_fields(self, client):
-        """Test requests with missing required fields"""
+        """Test requests with missing required fields (should now have better error messages)"""
         # Missing input
         response = client.post('/convert',
             json={
@@ -246,6 +246,7 @@ class TestErrorHandling:
         assert response.status_code == 200
         data = response.get_json()
         assert data['error'] is not None
+        assert 'input' in data['error']
 
         # Missing inputType
         response = client.post('/convert',
@@ -257,6 +258,7 @@ class TestErrorHandling:
         assert response.status_code == 200
         data = response.get_json()
         assert data['error'] is not None
+        assert 'inputType' in data['error']
 
         # Missing outputType
         response = client.post('/convert',
@@ -268,6 +270,36 @@ class TestErrorHandling:
         assert response.status_code == 200
         data = response.get_json()
         assert data['error'] is not None
+        assert 'outputType' in data['error']
+
+    def test_empty_json(self, client):
+        """Test empty JSON request"""
+        response = client.post('/convert', json={})
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['error'] is not None
+        assert 'input' in data['error']
+
+    def test_null_json(self, client):
+        """Test null JSON request"""
+        response = client.post('/convert', json=None)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['error'] is not None
+
+    def test_empty_input_values(self, client):
+        """Test empty input values"""
+        response = client.post('/convert',
+            json={
+                'input': '',
+                'inputType': 'decimal',
+                'outputType': 'binary'
+            }
+        )
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['error'] is not None
+        assert 'empty' in data['error'].lower()
 
     def test_invalid_input_type(self, client):
         """Test invalid input type"""
@@ -389,8 +421,8 @@ class TestErrorHandling:
         data = response.get_json()
         assert data['error'] is not None
 
-    def test_zero_base64_bug(self, client):
-        """Test zero to base64 conversion (known bug)"""
+    def test_zero_base64_conversion(self, client):
+        """Test zero to base64 conversion (should now work after fix)"""
         response = client.post('/convert',
             json={
                 'input': '0',
@@ -400,8 +432,9 @@ class TestErrorHandling:
         )
         assert response.status_code == 200
         data = response.get_json()
-        # This should work but likely fails in current implementation
-        # Test documents the bug
+        # Should now work after fix
+        assert data['error'] is None
+        assert data['result'] is not None
 
 
 class TestHTTPMethods:

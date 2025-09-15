@@ -59,6 +59,20 @@ Tests base64 conversions with little-endian byte order assumption:
 - Roundtrip conversion verification
 - Zero and negative number edge cases
 
+### `test_readme_examples.py` - README Example Tests
+Tests the specific examples mentioned in the README.md and comprehensive well-formed inputs:
+- All README.md examples tested explicitly
+- Comprehensive well-formed input combinations
+- Known failing examples documented
+- Cross-format conversion testing
+
+**Key Test Areas:**
+- README examples: "42" decimal to binary, "forty two" text to decimal, "2a" hex to text
+- All basic number format conversions that should work
+- Text conversion testing with improved text2digits support
+- Base64 roundtrip testing for common values
+- Known failing cases documented with expected failures
+
 ## Running Tests
 
 ### Prerequisites
